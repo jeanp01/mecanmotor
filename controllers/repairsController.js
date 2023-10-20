@@ -1,3 +1,4 @@
+const { validationResult } = require("express-validator");
 const Repairs = require("../routes/repairs.js");
 
 const RepairsController = {
@@ -34,6 +35,10 @@ const RepairsController = {
   // Crear una nueva cita de reparación
   createRepair: async (req, res) => {
     const { date, userId } = req.body;
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
     try {
       const newRepair = await Repairs.create({
         date,
@@ -94,6 +99,29 @@ const RepairsController = {
       return res.status(200).json({ message: "Reparación cancelada" });
     } catch (error) {
       return res.status(500).json({ error: "Error al cancelar la reparación" });
+    }
+  },
+
+  //validacion de un servicio pendiente
+  validatePendingService: async (req, res, next) => {
+    const { id } = req.params;
+
+    try {
+      const service = await Repairs.findByPk(id);
+      if (!service) {
+        return res
+          .status(404)
+          .json({ error: "Servicio pendiente no encontrado" });
+      }
+      if (service.status !== "pending") {
+        return res.status(400).json({ error: "Este servicio no es pendiente" });
+      }
+      req.foundService = service;
+      next();
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ error: "Error en la validacion del servicio pendiente" });
     }
   },
 };

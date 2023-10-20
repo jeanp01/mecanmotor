@@ -1,6 +1,18 @@
+const { validationResult } = require("express-validator");
 const User = require("../models/User.js");
+const bcrypt = require("bcrypt");
 
 const UserController = {
+  // Buscar un usuario por su correo electrónico
+  findUserByEmail: async (email) => {
+    try {
+      const user = await User.findOne({ where: { email } });
+      return user;
+    } catch (error) {
+      throw new Error("Error al buscar el usuario por correo electrónico");
+    }
+  },
+
   // Obtener lista de usuarios
   getAllUsers: async (req, res) => {
     try {
@@ -13,6 +25,7 @@ const UserController = {
 
   // Obtener usuario por ID
   getUserById: async (req, res) => {
+    const user = req.foundUser;
     const { id } = req.params; // Corregido: Obtener el ID de los parámetros de la solicitud
 
     try {
@@ -30,7 +43,11 @@ const UserController = {
 
   // Crear un nuevo usuario
   createUser: async (req, res) => {
+    const errors = validationResult(req);
     const { name, email, password, role } = req.body;
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
 
     try {
       //verificar si existe usuario con igual id
@@ -105,6 +122,26 @@ const UserController = {
       return res
         .status(500)
         .json({ error: "Error al deshabilitar la cuenta de usuario" });
+    }
+  },
+
+  //Usuario exista por id
+  validateUserById: async (req, res, next) => {
+    const { id } = req.params;
+
+    try {
+      const user = await User.findByPk(id);
+
+      if (!user) {
+        return res.status(404).json({ error: "Usuario no encontrado" });
+      }
+
+      req.foundUser = user;
+      next();
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ error: "Error en la validación del usuario" });
     }
   },
 };
