@@ -18,3 +18,6 @@ const conectcb = require("./conection.js");
 app.listen(port, () => {
   console.log(`servidor corriendo en el puerto ${port} 🤖`);
 });
+
+const errorHandler = require("./errorHandler.js");
+app.use(errorHandler);

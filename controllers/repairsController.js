@@ -1,5 +1,6 @@
 const { validationResult } = require("express-validator");
 const Repairs = require("../routes/repairs.js");
+const User = require("../models/User.js");
 
 const RepairsController = {
   //obtener lista de motos por reparar
@@ -7,6 +8,7 @@ const RepairsController = {
     try {
       const PendingRepairs = await Repairs.findAll({
         where: { status: "pending" },
+        include: { model: User, as: "user" },
       });
       return res.status(200).json(PendingRepairs);
     } catch (error) {

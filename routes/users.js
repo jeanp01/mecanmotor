@@ -5,6 +5,7 @@ const User = require("../models/User.js");
 const { validationResult, body } = require("express-validator");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const authorizeEmployee = require("../authMiddleware.js");
 
 // Ruta de inicio de sesión
 router.post("/", async (req, res) => {
@@ -56,9 +57,9 @@ router.post(
   UserController.createUser
 );
 //actualizar los datos de usuario
-router.patch("/:id", UserController.updateUser);
+router.patch("/:id", authorizeEmployee, UserController.updateUser);
 //deshabilidar cuenta
-router.delete("/:id", UserController.disableUser);
+router.delete("/:id", authorizeEmployee, UserController.disableUser);
 //crear usuario
 router.delete("/:id", UserController.createUser);
 // usuario exista dado el id.
